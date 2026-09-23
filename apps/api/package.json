@@ -11,7 +11,8 @@
     "start:worker": "node dist/worker.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "simulate:push": "node scripts/simulate-push.mjs"
+    "simulate:push": "node scripts/simulate-push.mjs",
+    "smee": "node scripts/smee.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
@@ -21,7 +22,8 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "ioredis": "^5.4.1",
-    "simple-git": "^3.27.0"
+    "simple-git": "^3.27.0",
+    "smee-client": "^2.0.4"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

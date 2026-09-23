@@ -72,9 +72,24 @@ docker-compose.yml   Postgres + Redis for local dev
    ```
 8. Open the dashboard at http://localhost:5173 to watch the build/deploy progress and view logs.
 
-## Real GitHub webhooks
+## Real GitHub webhooks (via smee.io)
 
-Point a repo's webhook (Settings → Webhooks) at `POST /webhooks/github` with content type `application/json` and the same secret as `GITHUB_WEBHOOK_SECRET`. Since GitHub needs a public URL to reach your machine, use a tunnel like `smee.io` or `ngrok` during local development.
+GitHub needs a public URL to deliver webhooks to, so during local dev we forward them from a [smee.io](https://smee.io) channel to `localhost`.
+
+1. Get a channel: visit https://smee.io/new, copy the URL it gives you (`https://smee.io/<channel-id>`).
+2. Set it as `SMEE_URL` in `apps/api/.env`.
+3. Run the forwarder:
+   ```bash
+   npm run smee -w apps/api
+   ```
+4. In the target GitHub repo's Settings → Webhooks → Add webhook:
+   - Payload URL: your smee channel URL (`https://smee.io/<channel-id>`)
+   - Content type: `application/json`
+   - Secret: same value as `GITHUB_WEBHOOK_SECRET`
+   - Events: just the `push` event
+5. Register the repo with DeployLite (`POST /repos`) using the same owner/name as the GitHub repo, then push a commit — the build should appear on the dashboard within a couple seconds.
+
+In production, point the webhook directly at your deployed API instead of smee.io.
 
 ## Status
 

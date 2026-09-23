@@ -48,8 +48,10 @@ const body = JSON.stringify(payload);
 const signature = "sha256=" + crypto.createHmac("sha256", secret).update(body).digest("hex");
 
 const apiUrl = process.env.API_URL ?? "http://localhost:4000";
+// smee.io channels only accept POSTs at their root URL, not a sub-path.
+const targetUrl = apiUrl.includes("smee.io") ? apiUrl : `${apiUrl}/webhooks/github`;
 
-const res = await fetch(`${apiUrl}/webhooks/github`, {
+const res = await fetch(targetUrl, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -59,4 +61,12 @@ const res = await fetch(`${apiUrl}/webhooks/github`, {
   body,
 });
 
-console.log(res.status, await res.json());
+const text = await res.text();
+try {
+  console.log(res.status, JSON.parse(text));
+} catch {
+  console.log(res.status, text.slice(0, 200));
+}
+if (apiUrl.includes("smee.io")) {
+  console.log("Posted to smee channel — check the smee forwarder's terminal for the relayed result.");
+}
