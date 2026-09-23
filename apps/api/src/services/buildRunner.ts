@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import simpleGit from "simple-git";
+import { simpleGit } from "simple-git";
 import { prisma } from "../db/client.js";
 import { buildImage, runContainer, stopAndRemoveContainer } from "./docker.js";
 import type { BuildJobData } from "../queue/queue.js";
@@ -82,7 +82,7 @@ export async function runBuild(job: BuildJobData, onLog: (line: string) => void)
     await log(`Cloning ${job.cloneUrl} @ ${job.commitSha}`);
 
     const git = simpleGit();
-    await git.clone(job.cloneUrl, repoDir);
+    await git.clone(job.cloneUrl, repoDir, ["--branch", job.branch, "--single-branch"]);
     await git.cwd(repoDir).checkout(job.commitSha);
     await log("Repository cloned");
 

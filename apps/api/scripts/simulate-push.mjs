@@ -4,14 +4,28 @@
 //
 // Usage: node scripts/simulate-push.mjs <owner> <name> [commitSha] [branch]
 import crypto from "node:crypto";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import "dotenv/config";
 
-const [, , owner, name, commitSha = "0000000000000000000000000000000000000000", branch = "main"] = process.argv;
+const execFileAsync = promisify(execFile);
+
+const [, , owner, name, commitShaArg, branch = "main"] = process.argv;
 
 if (!owner || !name) {
   console.error("Usage: node scripts/simulate-push.mjs <owner> <name> [commitSha] [branch]");
   process.exit(1);
 }
+
+async function resolveLatestSha(cloneUrl, branch) {
+  const { stdout } = await execFileAsync("git", ["ls-remote", cloneUrl, `refs/heads/${branch}`]);
+  const sha = stdout.split(/\s+/)[0];
+  if (!sha) throw new Error(`Could not resolve HEAD of ${branch} on ${cloneUrl}`);
+  return sha;
+}
+
+const cloneUrl = `https://github.com/${owner}/${name}.git`;
+const commitSha = commitShaArg ?? (await resolveLatestSha(cloneUrl, branch));
 
 const secret = process.env.GITHUB_WEBHOOK_SECRET;
 if (!secret) {
