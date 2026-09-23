@@ -1,0 +1,15 @@
+{
+  "name": "deploylite",
+  "private": true,
+  "version": "0.0.1",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w apps/api",
+    "dev:worker": "npm run dev:worker -w apps/api",
+    "dev:web": "npm run dev -w apps/web",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  }
+}

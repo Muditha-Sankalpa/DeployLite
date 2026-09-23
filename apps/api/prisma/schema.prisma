@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Repo {
+  id        String   @id @default(cuid())
+  owner     String
+  name      String
+  fullName  String   @unique // "owner/name"
+  cloneUrl  String
+  createdAt DateTime @default(now())
+  builds    Build[]
+
+  @@index([fullName])
+}
+
+enum BuildStatus {
+  QUEUED
+  CLONING
+  TESTING
+  BUILDING
+  DEPLOYING
+  SUCCESS
+  FAILED
+}
+
+model Build {
+  id          String      @id @default(cuid())
+  repoId      String
+  repo        Repo        @relation(fields: [repoId], references: [id])
+  commitSha   String
+  branch      String
+  status      BuildStatus @default(QUEUED)
+  logs        String      @default("")
+  errorMessage String?
+  createdAt   DateTime    @default(now())
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  deployment  Deployment?
+
+  @@index([repoId])
+}
+
+enum DeploymentStatus {
+  RUNNING
+  STOPPED
+  FAILED
+}
+
+model Deployment {
+  id          String           @id @default(cuid())
+  buildId     String           @unique
+  build       Build            @relation(fields: [buildId], references: [id])
+  url         String
+  containerId String
+  port        Int
+  status      DeploymentStatus @default(RUNNING)
+  createdAt   DateTime         @default(now())
+}
